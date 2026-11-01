@@ -7,7 +7,7 @@ interface AuthContextType {
   user: UserRead | null;
   loading: boolean;
   isAuthenticated: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<UserRead>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -28,100 +28,135 @@ export const SEEDED_ACCOUNTS: Record<
     organization: string;
   }
 > = {
+  // 1. System Administrator
   "admin@example.com": {
     id: "usr-001",
     email: "admin@example.com",
     password: "admin123",
-    full_name: "Dr. K. S. Murthy",
-    role: "central_admin",
+    full_name: "System Administrator",
+    role: "system_admin",
     organization: "AICTE Central HQ",
   },
+  // 2. Bureau Officer
   "officer1@example.com": {
     id: "usr-002",
     email: "officer1@example.com",
     password: "officer123",
-    full_name: "Rajesh Kumar",
+    full_name: "Bureau Officer",
     role: "bureau_officer",
     organization: "Admissions Bureau",
   },
-  "hei.admin@example.com": {
-    id: "usr-003",
-    email: "hei.admin@example.com",
-    password: "hei123",
-    full_name: "Prof. Arvind Rao",
-    role: "hei_admin",
-    organization: "Synthetic Inst. of Tech",
-  },
+  // 3. Reviewing Officer
   "reviewer@example.com": {
-    id: "usr-003b",
+    id: "usr-003",
     email: "reviewer@example.com",
     password: "review123",
-    full_name: "Prof. Arvind Rao",
-    role: "hei_admin",
+    full_name: "Reviewing Officer",
+    role: "reviewing_officer",
+    organization: "Overlap Review Desk & Institutional Dossier",
+  },
+  "hei.admin@example.com": {
+    id: "usr-003b",
+    email: "hei.admin@example.com",
+    password: "hei123",
+    full_name: "HEI Administrator",
+    role: "reviewing_officer",
     organization: "Synthetic Inst. of Tech",
   },
-  "auditor@example.com": {
-    id: "usr-004",
-    email: "auditor@example.com",
-    password: "audit123",
-    full_name: "Sunita Deshmukh",
-    role: "auditor",
-    organization: "Statutory & SLA Vigilance",
-  },
-  "viewer@example.com": {
-    id: "usr-004b",
-    email: "viewer@example.com",
-    password: "viewer123",
-    full_name: "Sunita Deshmukh",
-    role: "auditor",
-    organization: "Statutory & SLA Vigilance",
-  },
-  "superadmin@example.com": {
-    id: "usr-005",
-    email: "superadmin@example.com",
-    password: "super123",
-    full_name: "Vikramaditya Sharma",
-    role: "super_admin",
-    organization: "GovTech Core Architecture",
-  },
+  // 4. Coordination Officer
   "coord@example.com": {
-    id: "usr-005b",
+    id: "usr-004",
     email: "coord@example.com",
     password: "coord123",
-    full_name: "Vikramaditya Sharma",
-    role: "super_admin",
+    full_name: "Coordination Officer",
+    role: "coordination_officer",
+    organization: "Inter-Bureau Secretariat",
+  },
+  "superadmin@example.com": {
+    id: "usr-004b",
+    email: "superadmin@example.com",
+    password: "super123",
+    full_name: "Super Administrator",
+    role: "coordination_officer",
     organization: "GovTech Core Architecture",
+  },
+  // 5. Management Viewer
+  "viewer@example.com": {
+    id: "usr-005",
+    email: "viewer@example.com",
+    password: "viewer123",
+    full_name: "Management Viewer",
+    role: "management_viewer",
+    organization: "Statutory & SLA Vigilance",
+  },
+  "auditor@example.com": {
+    id: "usr-005b",
+    email: "auditor@example.com",
+    password: "audit123",
+    full_name: "Auditor",
+    role: "management_viewer",
+    organization: "Statutory & SLA Vigilance",
   },
 };
 
-async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+function setAuthCookies(token: string, role: string) {
+  if (typeof document === "undefined") return;
+  document.cookie = `access_token=${encodeURIComponent(token)}; path=/; max-age=86400; SameSite=Lax`;
+  document.cookie = `synapse_role=${encodeURIComponent(role)}; path=/; max-age=86400; SameSite=Lax`;
+  document.cookie = `synapse_logged_in=1; path=/; max-age=86400; SameSite=Lax`;
+}
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...options.headers,
-  };
+function clearAuthCookies() {
+  if (typeof document === "undefined") return;
+  document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  document.cookie = "synapse_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  document.cookie = "synapse_logged_in=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+}
 
-  if (token) {
-    (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+function getStoredUser(): UserRead | null {
+  if (typeof window === "undefined") return null;
+  const isLoggedOut = localStorage.getItem("synapse_logged_out") === "true";
+  const token = localStorage.getItem("access_token");
+  if (isLoggedOut && !token) return null;
+
+  const stored = localStorage.getItem("synapse_user");
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      localStorage.removeItem("synapse_user");
+    }
   }
 
-  const response = await fetch(`${API_BASE}${url}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: "Request failed" }));
-    throw new Error(error.detail || "Request failed");
+  if (token && token.startsWith("synapse-auth-")) {
+    const role = token.replace("synapse-auth-", "");
+    const matching = Object.values(SEEDED_ACCOUNTS).find((a) => a.role === role);
+    if (matching) {
+      return {
+        id: matching.id,
+        email: matching.email,
+        full_name: matching.full_name,
+        is_active: true,
+        role: matching.role,
+        organization: matching.organization,
+      };
+    }
   }
 
-  return response.json();
+  return null;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserRead | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<UserRead | null>(() => getStoredUser());
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const isLoggedOut = localStorage.getItem("synapse_logged_out") === "true";
+    const token = localStorage.getItem("access_token");
+    const stored = localStorage.getItem("synapse_user");
+    if (isLoggedOut && !token) return false;
+    if (stored) return false;
+    return false;
+  });
 
   const fetchMe = useCallback(async () => {
     if (typeof window === "undefined") {
@@ -130,50 +165,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const token = localStorage.getItem("access_token");
-    const storedUser = localStorage.getItem("synapse_user");
     const isLoggedOut = localStorage.getItem("synapse_logged_out") === "true";
 
-    // 1. If explicit log out occurred and no new token, remain unauthenticated
+    // If explicit log out occurred and no new token, remain unauthenticated
     if (isLoggedOut && !token) {
       setUser(null);
       setLoading(false);
       return;
     }
 
-    // 2. If stored user JSON exists in local session
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        setUser(parsed);
-        setLoading(false);
-        return;
-      } catch {
-        localStorage.removeItem("synapse_user");
-      }
+    // Check stored user first
+    const stored = getStoredUser();
+    if (stored) {
+      setUser(stored);
+      setLoading(false);
+      return;
     }
 
-    // 3. If token exists, try fetching from backend
-    if (token) {
-      try {
-        const data = await fetchWithAuth("/api/v1/users/me");
-        const fullUser: UserRead = {
-          id: data.id,
-          email: data.email,
-          full_name: data.full_name,
-          is_active: data.is_active,
-          role: data.role,
-          organization: data.organization || SEEDED_ACCOUNTS[data.email]?.organization || "SYNAPSE Central",
-        };
-        setUser(fullUser);
-        localStorage.setItem("synapse_user", JSON.stringify(fullUser));
-        setLoading(false);
-        return;
-      } catch {
-        // Backend unavailable or token expired
-      }
-    }
-
-    // 4. Default initial session: Central Administrator
+    // Default to initial System Administrator session if clean slate
     const defaultAccount = SEEDED_ACCOUNTS["admin@example.com"];
     const initialUser: UserRead = {
       id: defaultAccount.id,
@@ -184,8 +193,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       organization: defaultAccount.organization,
     };
     setUser(initialUser);
-    localStorage.setItem("access_token", "mock-token-central_admin");
+    localStorage.setItem("access_token", "synapse-auth-system_admin");
     localStorage.setItem("synapse_user", JSON.stringify(initialUser));
+    setAuthCookies("synapse-auth-system_admin", initialUser.role);
     localStorage.removeItem("synapse_logged_out");
     setLoading(false);
   }, []);
@@ -194,46 +204,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchMe();
   }, [fetchMe]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<UserRead> => {
     setLoading(true);
     const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
 
-    // 1. Try Backend API first if available
+    // 1. Try Backend API first if available (with 1200ms timeout)
     try {
-      const data = await fetchWithAuth("/api/v1/auth/login", {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1200);
+
+      const resp = await fetch(`${API_BASE}/api/v1/auth/login`, {
         method: "POST",
-        body: JSON.stringify({ email: cleanEmail, password }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
-      if (data && data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
-        if (data.refresh_token) {
-          localStorage.setItem("refresh_token", data.refresh_token);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.access_token) {
+          localStorage.setItem("access_token", data.access_token);
+          if (data.refresh_token) {
+            localStorage.setItem("refresh_token", data.refresh_token);
+          }
+          localStorage.removeItem("synapse_logged_out");
+
+          // Fetch user profile from backend
+          const meResp = await fetch(`${API_BASE}/api/v1/users/me`, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${data.access_token}`,
+            },
+          });
+
+          if (meResp.ok) {
+            const meData = await meResp.json();
+            const authenticatedUser: UserRead = {
+              id: meData.id,
+              email: meData.email,
+              full_name: meData.full_name,
+              is_active: meData.is_active,
+              role: meData.role,
+              organization: meData.organization || SEEDED_ACCOUNTS[meData.email]?.organization || "AICTE Central HQ",
+            };
+
+            localStorage.setItem("synapse_user", JSON.stringify(authenticatedUser));
+            setAuthCookies(data.access_token, authenticatedUser.role);
+            setUser(authenticatedUser);
+            setLoading(false);
+            return authenticatedUser;
+          }
         }
-        localStorage.removeItem("synapse_logged_out");
-
-        const meData = await fetchWithAuth("/api/v1/users/me");
-        const authenticatedUser: UserRead = {
-          id: meData.id,
-          email: meData.email,
-          full_name: meData.full_name,
-          is_active: meData.is_active,
-          role: meData.role,
-          organization: meData.organization || SEEDED_ACCOUNTS[meData.email]?.organization || "SYNAPSE Central",
-        };
-
-        setUser(authenticatedUser);
-        localStorage.setItem("synapse_user", JSON.stringify(authenticatedUser));
-        setLoading(false);
-        return;
       }
     } catch {
-      // Backend unavailable or rejected, proceed to seeded accounts validation
+      // Backend unavailable or timed out, fallback to seeded enterprise accounts
     }
 
     // 2. Validate against seeded enterprise accounts
     const seeded = SEEDED_ACCOUNTS[cleanEmail];
-    if (seeded && seeded.password === password) {
+    if (seeded && seeded.password === cleanPassword) {
       const authenticatedUser: UserRead = {
         id: seeded.id,
         email: seeded.email,
@@ -243,17 +274,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         organization: seeded.organization,
       };
 
-      localStorage.setItem("access_token", `synapse-auth-${seeded.role}`);
+      const token = `synapse-auth-${seeded.role}`;
+      localStorage.setItem("access_token", token);
       localStorage.setItem("synapse_user", JSON.stringify(authenticatedUser));
       localStorage.removeItem("synapse_logged_out");
+      setAuthCookies(token, authenticatedUser.role);
 
       setUser(authenticatedUser);
       setLoading(false);
-      return;
+      return authenticatedUser;
     }
 
     setLoading(false);
-    throw new Error("Invalid email or password. Please verify your credentials.");
+    throw new Error("Invalid credentials. Please verify your email and password.");
   };
 
   const signOut = async () => {
@@ -262,8 +295,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("synapse_user");
       localStorage.setItem("synapse_logged_out", "true");
+      clearAuthCookies();
     }
     setUser(null);
+    setLoading(false);
   };
 
   const refreshUser = fetchMe;

@@ -72,9 +72,28 @@ export default function DashboardContent() {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.push("/login");
+      router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center select-none">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#6246EA] flex items-center justify-center text-white font-semibold text-sm shadow-xs animate-pulse">
+            S
+          </div>
+          <span className="text-[12px] font-mono text-[#98A2B3]">
+            Authenticating SYNAPSE Session...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    return null;
+  }
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<string>("overview");

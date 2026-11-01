@@ -1,13 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { AuthProvider } from "../components/AuthProvider";
+import React from "react";
 import DashboardContent from "./DashboardContent";
 
 export default function Home() {
-  return (
-    <AuthProvider>
-      <DashboardContent />
-    </AuthProvider>
-  );
+  return <DashboardContent />;
 }

@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Loader2, AlertCircle, ArrowRight, CheckCircle2, Shield, Building2 } from "lucide-react";
-import { useAuth, AuthProvider, SEEDED_ACCOUNTS } from "../../components/AuthProvider";
+import { Eye, EyeOff, Loader2, AlertCircle, ArrowRight, Shield, Building2, CheckCircle2 } from "lucide-react";
+import { useAuth } from "../../components/AuthProvider";
 
 const DEMO_PRESETS = [
   {
-    roleTitle: "Central Administrator",
+    roleTitle: "System Administrator",
     bureau: "AICTE Central HQ",
-    initials: "CA",
+    initials: "SA",
     email: "admin@example.com",
     password: "admin123",
     color: "bg-[#F3F0FF] text-[#6246EA] border-[#E8EAF0]",
@@ -23,39 +23,46 @@ const DEMO_PRESETS = [
     color: "bg-[#EBF3FC] text-[#3478C9] border-[#D5E6F8]",
   },
   {
-    roleTitle: "HEI Administrator",
-    bureau: "Synthetic Inst. of Tech",
-    initials: "HA",
-    email: "hei.admin@example.com",
-    password: "hei123",
+    roleTitle: "Reviewing Officer",
+    bureau: "Synthetic Inst. of Tech / Review Desk",
+    initials: "RO",
+    email: "reviewer@example.com",
+    password: "review123",
     color: "bg-[#E8F8F2] text-[#078B68] border-[#D1F0E4]",
   },
   {
-    roleTitle: "Auditor",
-    bureau: "Statutory & SLA Vigilance",
-    initials: "AU",
-    email: "auditor@example.com",
-    password: "audit123",
-    color: "bg-[#FCF8E8] text-[#C88918] border-[#F6E8B6]",
+    roleTitle: "Coordination Officer",
+    bureau: "Inter-Bureau Secretariat",
+    initials: "CO",
+    email: "coord@example.com",
+    password: "coord123",
+    color: "bg-[#F3F0FF] text-[#6246EA] border-[#E8EAF0]",
   },
   {
-    roleTitle: "Super Administrator",
-    bureau: "GovTech Core Architecture",
-    initials: "SA",
-    email: "superadmin@example.com",
-    password: "super123",
-    color: "bg-[#F3F0FF] text-[#6246EA] border-[#E8EAF0]",
+    roleTitle: "Management Viewer",
+    bureau: "Statutory & SLA Vigilance",
+    initials: "MV",
+    email: "viewer@example.com",
+    password: "viewer123",
+    color: "bg-[#FCF8E8] text-[#C88918] border-[#F6E8B6]",
   },
 ];
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { user, isAuthenticated, loading, signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // If already authenticated, redirect to dashboard immediately
+  useEffect(() => {
+    if (!loading && isAuthenticated && user) {
+      router.replace("/");
+    }
+  }, [loading, isAuthenticated, user, router]);
 
   const handleSelectPreset = (preset: (typeof DEMO_PRESETS)[0]) => {
     setEmail(preset.email);
@@ -65,7 +72,12 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (isSubmitting) return;
+
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
       setAuthError("Please enter both email and password.");
       return;
     }
@@ -74,11 +86,12 @@ function LoginForm() {
     setAuthError(null);
 
     try {
-      await signIn(email, password);
-      router.push("/");
+      await signIn(cleanEmail, cleanPassword);
+      // Immediately navigate on first click
+      router.replace("/");
+      router.refresh();
     } catch (err: any) {
-      setAuthError(err.message || "Authentication failed. Please check credentials.");
-    } finally {
+      setAuthError(err.message || "Authentication failed. Please verify credentials.");
       setIsSubmitting(false);
     }
   };
@@ -131,7 +144,8 @@ function LoginForm() {
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-10 px-3 bg-[#F7F8FA] hover:bg-white border border-[#E8EAF0] rounded-lg text-[13px] text-[#171923] placeholder-[#98A2B3] focus:outline-none focus:border-[#6246EA] focus:bg-white transition-colors"
+                disabled={isSubmitting}
+                className="w-full h-10 px-3 bg-[#F7F8FA] hover:bg-white border border-[#E8EAF0] rounded-lg text-[13px] text-[#171923] placeholder-[#98A2B3] focus:outline-none focus:border-[#6246EA] focus:bg-white transition-colors disabled:opacity-60"
               />
             </div>
 
@@ -147,7 +161,8 @@ function LoginForm() {
                   placeholder="Enter your security credentials"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-10 px-3 pr-10 bg-[#F7F8FA] hover:bg-white border border-[#E8EAF0] rounded-lg text-[13px] text-[#171923] placeholder-[#98A2B3] focus:outline-none focus:border-[#6246EA] focus:bg-white transition-colors"
+                  disabled={isSubmitting}
+                  className="w-full h-10 px-3 pr-10 bg-[#F7F8FA] hover:bg-white border border-[#E8EAF0] rounded-lg text-[13px] text-[#171923] placeholder-[#98A2B3] focus:outline-none focus:border-[#6246EA] focus:bg-white transition-colors disabled:opacity-60"
                 />
                 <button
                   type="button"
@@ -182,7 +197,7 @@ function LoginForm() {
           {/* 5 Seeded Enterprise Accounts Preset Strip */}
           <div className="pt-4 border-t border-[#E8EAF0] space-y-2.5">
             <div className="flex items-center justify-between text-[11px] text-[#98A2B3] font-medium uppercase tracking-wider">
-              <span>Seeded Enterprise Accounts (5 Portals)</span>
+              <span>Seeded Enterprise Accounts (5 Roles)</span>
               <span>1-Click Fill</span>
             </div>
 
@@ -194,6 +209,7 @@ function LoginForm() {
                     key={p.email}
                     type="button"
                     onClick={() => handleSelectPreset(p)}
+                    disabled={isSubmitting}
                     className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between transition-colors ${
                       isSelected
                         ? "bg-[#F3F0FF] border-[#6246EA]/40 ring-1 ring-[#6246EA]/20"
@@ -233,12 +249,3 @@ function LoginForm() {
     </div>
   );
 }
-
-export default function LoginPage() {
-  return (
-    <AuthProvider>
-      <LoginForm />
-    </AuthProvider>
-  );
-}
-

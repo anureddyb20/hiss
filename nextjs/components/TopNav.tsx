@@ -113,8 +113,11 @@ export default function TopNav({
     setShowSignOutConfirm(false);
     setAccountMenuOpen(false);
     await signOut();
-    router.replace("/login");
-    router.refresh();
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    } else {
+      router.replace("/login");
+    }
   };
 
   const handleNavigateSignIn = () => {

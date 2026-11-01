@@ -61,13 +61,24 @@ export default function LoginPage() {
   useEffect(() => {
     if (!loading && isAuthenticated && user) {
       router.replace("/");
+    } else if (!isAuthenticated) {
+      setIsSubmitting(false);
+      setAuthError(null);
     }
   }, [loading, isAuthenticated, user, router]);
+
+  // Clean up submitting state on unmount
+  useEffect(() => {
+    return () => {
+      setIsSubmitting(false);
+    };
+  }, []);
 
   const handleSelectPreset = (preset: (typeof DEMO_PRESETS)[0]) => {
     setEmail(preset.email);
     setPassword(preset.password);
     setAuthError(null);
+    setIsSubmitting(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,6 +98,7 @@ export default function LoginPage() {
 
     try {
       await signIn(cleanEmail, cleanPassword);
+      setIsSubmitting(false);
       // Immediately navigate on first click
       router.replace("/");
       router.refresh();

@@ -4,4 +4,5 @@ export interface UserRead {
   full_name: string | null;
   is_active: boolean;
   role: string;
+  organization?: string;
 }

@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 const schema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
@@ -29,10 +30,17 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { user, signIn } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filledFromDemo, setFilledFromDemo] = useState(false);
+
+  React.useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const {
     register,
@@ -58,23 +66,15 @@ const Login: React.FC = () => {
   };
 
   const onSubmit = async (data: FormData) => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setAuthError(null);
     
     try {
-      const resp = await axios.post('/api/v1/auth/login', data);
-      const { access_token, refresh_token } = resp.data;
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
-      navigate('/dashboard');
-    } catch (e) {
-      if (axios.isAxiosError(e) && e.response) {
-        const detail = e.response.data?.detail || 'Authentication failed. Please check your credentials.';
-        setAuthError(detail);
-      } else {
-        setAuthError('An unexpected error occurred. Please try again.');
-      }
-    } finally {
+      await signIn(data.email, data.password);
+      navigate('/dashboard', { replace: true });
+    } catch (e: any) {
+      setAuthError(e.message || 'Authentication failed. Please check your credentials.');
       setIsSubmitting(false);
     }
   };

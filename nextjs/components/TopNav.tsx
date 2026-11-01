@@ -26,13 +26,13 @@ const ROLE_DISPLAY: Record<
   string,
   { label: string; bureau: string; initials: string; portalRole: string }
 > = {
-  central_admin: {
-    label: "Central Administrator",
+  system_admin: {
+    label: "System Administrator",
     bureau: "AICTE Central HQ",
-    initials: "CA",
+    initials: "SA",
     portalRole: "central_admin",
   },
-  system_admin: {
+  central_admin: {
     label: "Central Administrator",
     bureau: "AICTE Central HQ",
     initials: "CA",
@@ -44,29 +44,23 @@ const ROLE_DISPLAY: Record<
     initials: "BO",
     portalRole: "bureau_officer",
   },
+  reviewing_officer: {
+    label: "Reviewing Officer",
+    bureau: "Overlap Review Desk & Institutional Dossier",
+    initials: "RO",
+    portalRole: "hei_admin",
+  },
   hei_admin: {
     label: "HEI Administrator",
     bureau: "Synthetic Inst. of Tech",
     initials: "HA",
     portalRole: "hei_admin",
   },
-  reviewing_officer: {
-    label: "HEI Administrator",
-    bureau: "Synthetic Inst. of Tech",
-    initials: "HA",
-    portalRole: "hei_admin",
-  },
-  auditor: {
-    label: "Auditor",
-    bureau: "Statutory & SLA Vigilance",
-    initials: "AU",
-    portalRole: "auditor",
-  },
-  management_viewer: {
-    label: "Auditor",
-    bureau: "Statutory & SLA Vigilance",
-    initials: "AU",
-    portalRole: "auditor",
+  coordination_officer: {
+    label: "Coordination Officer",
+    bureau: "Inter-Bureau Secretariat",
+    initials: "CO",
+    portalRole: "super_admin",
   },
   super_admin: {
     label: "Super Administrator",
@@ -74,11 +68,17 @@ const ROLE_DISPLAY: Record<
     initials: "SA",
     portalRole: "super_admin",
   },
-  coordination_officer: {
-    label: "Super Administrator",
-    bureau: "GovTech Core Architecture",
-    initials: "SA",
-    portalRole: "super_admin",
+  management_viewer: {
+    label: "Management Viewer",
+    bureau: "Statutory & SLA Vigilance",
+    initials: "MV",
+    portalRole: "auditor",
+  },
+  auditor: {
+    label: "Auditor",
+    bureau: "Statutory & SLA Vigilance",
+    initials: "AU",
+    portalRole: "auditor",
   },
 };
 
@@ -113,12 +113,13 @@ export default function TopNav({
     setShowSignOutConfirm(false);
     setAccountMenuOpen(false);
     await signOut();
-    router.push("/login");
+    router.replace("/login");
+    router.refresh();
   };
 
   const handleNavigateSignIn = () => {
     setAccountMenuOpen(false);
-    router.push("/login");
+    router.replace("/login");
   };
 
   const getRoleInfo = () => {

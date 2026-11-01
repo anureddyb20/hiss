@@ -375,7 +375,7 @@ export default function DashboardContent() {
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[11px] font-medium text-[#6246EA] bg-[#F3F0FF] px-2 py-0.5 rounded-md border border-[#E8EAF0]">
-                          CENTRAL ADMINISTRATOR
+                          {user?.role === "system_admin" ? "SYSTEM ADMINISTRATOR" : "CENTRAL ADMINISTRATOR"}
                         </span>
                         <span className="text-[12px] text-[#98A2B3] font-mono">
                           Synchronized: Today, 14:32:00 IST • Reporting Period: Q3 AY 2026-27
@@ -808,7 +808,7 @@ export default function DashboardContent() {
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[11px] font-medium text-[#078B68] bg-[#E8F8F2] px-2 py-0.5 rounded-md border border-[#D1F0E4]">
-                          HEI INSTITUTIONAL PORTAL
+                          {user?.role === "reviewing_officer" ? "REVIEWING OFFICER & INSTITUTIONAL PORTAL" : "HEI INSTITUTIONAL PORTAL"}
                         </span>
                         <span className="text-[12px] text-[#98A2B3] font-mono">
                           AISHE: C-49210 • Official ID: AICTE-SIT-4921
@@ -923,7 +923,7 @@ export default function DashboardContent() {
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[11px] font-medium text-[#C88918] bg-[#FCF8E8] px-2 py-0.5 rounded-md border border-[#F6E8B6]">
-                          STATUTORY AUDITOR & VIGILANCE
+                          {user?.role === "management_viewer" ? "MANAGEMENT VIEWER & STATUTORY AUDIT" : "STATUTORY AUDITOR & VIGILANCE"}
                         </span>
                         <span className="text-[12px] text-[#98A2B3] font-mono">
                           Cryptographic Ledger Node #01 • SHA-256 Merkle Chain
@@ -1032,7 +1032,7 @@ export default function DashboardContent() {
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[11px] font-medium text-[#6246EA] bg-[#F3F0FF] px-2 py-0.5 rounded-md border border-[#E8EAF0]">
-                          SUPER ADMINISTRATOR PORTAL
+                          {user?.role === "coordination_officer" ? "COORDINATION OFFICER PORTAL" : "SUPER ADMINISTRATOR PORTAL"}
                         </span>
                         <span className="text-[12px] text-[#98A2B3] font-mono">
                           GovTech Core Architecture • Zero-Trust Access Control

@@ -147,16 +147,8 @@ function getStoredUser(): UserRead | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserRead | null>(() => getStoredUser());
-  const [loading, setLoading] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    const isLoggedOut = localStorage.getItem("synapse_logged_out") === "true";
-    const token = localStorage.getItem("access_token");
-    const stored = localStorage.getItem("synapse_user");
-    if (isLoggedOut && !token) return false;
-    if (stored) return false;
-    return false;
-  });
+  const [user, setUser] = useState<UserRead | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const fetchMe = useCallback(async () => {
     if (typeof window === "undefined") {

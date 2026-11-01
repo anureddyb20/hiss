@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+
+# Environment
+.env
+.env.*
+
+# Poetry / pip
+*.egg-info/
+.dist/
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+
+# Build artifacts
+dist/
+build/
+.next/
+*.tsbuildinfo
+.DS_Store
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Alembic
+alembic/versions/*.pyc

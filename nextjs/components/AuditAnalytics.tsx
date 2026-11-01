@@ -55,13 +55,15 @@ export default function AuditAnalytics({ auditLogs }: AuditAnalyticsProps) {
                   </div>
 
                       <div className="flex items-center gap-2.5">
-                        <div className="flex bg-[#F7F8FA] p-1 rounded-lg border border-[#E8EAF0] text-xs">
-                          {["7d", "30d", "90d", "1y"].map((p) => (
-                            <button
-                              key={p}
-                              onClick={() => setFilterPeriod(p)}
-                                      ? "bg-white text-[#171923] shadow-xs"
-                                      : "text-[#667085] hover:text-[#171923]"
+          <div className="flex bg-[#F7F8FA] p-1 rounded-lg border border-[#E8EAF0] text-xs">
+            {["7d", "30d", "90d", "1y"].map((p) => (
+              <button
+                key={p}
+                onClick={() => setFilterPeriod(p)}
+                className={`px-3 py-1 rounded-md text-[12px] font-medium transition-colors ${
+                  filterPeriod === p
+                    ? "bg-white text-[#171923] shadow-xs"
+                    : "text-[#667085] hover:text-[#171923]"
                 }`}
               >
                 {p.toUpperCase()}

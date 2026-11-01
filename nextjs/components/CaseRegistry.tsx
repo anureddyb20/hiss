@@ -304,15 +304,17 @@ export default function CaseRegistry({
                                                                 {/* 5. Priority */}
                                                                   <td className="py-3.5 px-4">
                                                                     <span
-                                                                            ? "bg-[#FDF2F4] text-[#D93649] border border-[#FAD2D8]"
-                                                                            : c.priority === "high"
-                                                                                ? "bg-[#FCF8E8] text-[#C88918] border border-[#F6E8B6]"
-                                                                                : "bg-[#EBF3FC] text-[#3478C9] border border-[#D5E6F8]"
-                                                                          }`}
-                    >
-                      {c.priority.toUpperCase()}
-                    </span>
-                  </td>
+                                                                      className={`text-[11px] font-medium px-2 py-0.5 rounded-md border font-mono ${
+                                                                        c.priority === "critical"
+                                                                          ? "bg-[#FDF2F4] text-[#D93649] border border-[#FAD2D8]"
+                                                                          : c.priority === "high"
+                                                                              ? "bg-[#FCF8E8] text-[#C88918] border border-[#F6E8B6]"
+                                                                              : "bg-[#EBF3FC] text-[#3478C9] border border-[#D5E6F8]"
+                                                                      }`}
+                                                                    >
+                                                                      {c.priority.toUpperCase()}
+                                                                    </span>
+                                                                  </td>
 
                   {/* 6. Status */}
                   <td className="py-3.5 px-4">
@@ -376,12 +378,14 @@ export default function CaseRegistry({
                                                                                     {selectedCase.bureau}
                                                                                   </span>
                                                                                   <span
-                                                                                            ? "bg-[#FDF2F4] text-[#D93649] border border-[#FAD2D8]"
-                                                                                            : "bg-[#EBF3FC] text-[#3478C9] border border-[#D5E6F8]"
-                                                                                        }`}
-                  >
-                    {selectedCase.priority.toUpperCase()} SLA
-                  </span>
+                                                                                    className={`text-[11px] font-medium px-2 py-0.5 rounded-md border font-mono ${
+                                                                                      selectedCase.priority === "critical"
+                                                                                        ? "bg-[#FDF2F4] text-[#D93649] border border-[#FAD2D8]"
+                                                                                        : "bg-[#EBF3FC] text-[#3478C9] border border-[#D5E6F8]"
+                                                                                    }`}
+                                                                                  >
+                                                                                    {selectedCase.priority.toUpperCase()} SLA
+                                                                                  </span>
                 </div>
                 <h3 className="text-[16px] font-medium text-[#171923] mt-2 leading-snug">
                   {selectedCase.subject}

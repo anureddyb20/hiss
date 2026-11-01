@@ -156,12 +156,14 @@ function VisualRelationshipDiagram({ overlap }: { overlap: OverlapItem }) {
                                                             </div>
                                                           </div>
                                                           <span
-                                                                    ? "bg-[#E8F8F2] text-[#078B68] border border-[#D1F0E4]"
-                                                                    : isRejected
-                                                                        ? "bg-[#F7F8FA] text-[#667085] border border-[#E8EAF0]"
-                                                                        : "bg-[#FCF8E8] text-[#C88918] border border-[#F6E8B6]"
-              }`}
-            >
+                                                            className={`px-2 py-0.5 rounded-md text-[11px] font-medium font-mono ${
+                                                              isConfirmed
+                                                                ? "bg-[#E8F8F2] text-[#078B68] border border-[#D1F0E4]"
+                                                                : isRejected
+                                                                    ? "bg-[#F7F8FA] text-[#667085] border border-[#E8EAF0]"
+                                                                    : "bg-[#FCF8E8] text-[#C88918] border border-[#F6E8B6]"
+                                                            }`}
+                                                          >
               {overlap.reviewStatus.toUpperCase()}
             </span>
           </div>
@@ -297,10 +299,12 @@ export default function OverlapEngine({
                                                                     <button
                                                                       key={f.id}
                                                                       onClick={() => setFilterStatus(f.id)}
-                                                                              ? "bg-[#F3F0FF] text-[#6246EA]"
-                                                                              : "text-[#667085] hover:text-[#171923] hover:bg-[#F7F8FA]"
-              }`}
-            >
+                                                                      className={`px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
+                                                                        filterStatus === f.id
+                                                                          ? "bg-[#F3F0FF] text-[#6246EA]"
+                                                                          : "text-[#667085] hover:text-[#171923] hover:bg-[#F7F8FA]"
+                                                                      }`}
+                                                                    >
               {f.label}
             </button>
           ))}

@@ -112,10 +112,12 @@ export default function Institution360({
                   <div
                     key={inst.id}
                     onClick={() => setSelectedInstId(inst.id)}
-                            ? "bg-[#F3F0FF]/50 border-l-2 border-[#6246EA]"
-                            : "hover:bg-[#F7F8FA] border-l-2 border-transparent"
-                }`}
-              >
+                    className={`p-3.5 cursor-pointer transition-colors ${
+                      isSelected
+                        ? "bg-[#F3F0FF]/50 border-l-2 border-[#6246EA]"
+                        : "hover:bg-[#F7F8FA] border-l-2 border-transparent"
+                    }`}
+                  >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <span className="font-medium text-[13px] text-[#171923] line-clamp-1 leading-snug">
                     {inst.name}
@@ -174,10 +176,12 @@ export default function Institution360({
                       {activeInst.officialId}
                     </span>
                     <span
-                              ? "bg-[#E8F8F2] text-[#078B68] border border-[#D1F0E4]"
-                              : "bg-[#FDF2F4] text-[#D93649] border border-[#FAD2D8]"
-                  }`}
-                >
+                      className={`px-2 py-0.5 rounded-md text-[11px] font-medium border font-mono ${
+                        activeInst.verificationStatus === "verified"
+                          ? "bg-[#E8F8F2] text-[#078B68] border border-[#D1F0E4]"
+                          : "bg-[#FDF2F4] text-[#D93649] border border-[#FAD2D8]"
+                      }`}
+                    >
                   {activeInst.verificationStatus.toUpperCase()}
                 </span>
                 <span className="text-[12px] text-[#98A2B3]">
@@ -232,10 +236,12 @@ export default function Institution360({
                     <button
                       key={t.id}
                       onClick={() => setActiveTab(t.id as any)}
-                              ? "border-[#6246EA] text-[#6246EA]"
-                              : "border-transparent text-[#667085] hover:text-[#171923]"
-                  }`}
-                >
+                      className={`pb-3 text-[13px] font-medium border-b-2 transition-colors ${
+                        isActive
+                          ? "border-[#6246EA] text-[#6246EA]"
+                          : "border-transparent text-[#667085] hover:text-[#171923]"
+                      }`}
+                    >
                   {t.label}
                 </button>
               );

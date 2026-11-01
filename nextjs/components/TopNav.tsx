@@ -152,10 +152,12 @@ export default function TopNav({
                                                         onRoleChange(r.id);
                                                         setRoleMenuOpen(false);
                                                       }}
-                                                              ? "bg-[#F3F0FF] text-[#6246EA]"
-                                                              : "text-[#171923] hover:bg-[#F7F8FA]"
-                      }`}
-                    >
+                                                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors ${
+                                                        isSelected
+                                                          ? "bg-[#F3F0FF] text-[#6246EA]"
+                                                          : "text-[#171923] hover:bg-[#F7F8FA]"
+                                                      }`}
+                                                    >
                       <div>
                         <p className={`text-[13px] leading-tight ${isSelected ? "font-medium" : "font-normal"}`}>
                                                 {r.label}

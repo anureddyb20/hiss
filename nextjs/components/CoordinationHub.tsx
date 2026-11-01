@@ -93,10 +93,12 @@ export default function CoordinationHub({
                         <button
                           key={st.id}
                           onClick={() => setFilterStatus(st.id)}
-                                  ? "bg-[#F3F0FF] text-[#6246EA]"
-                                  : "text-[#667085] hover:text-[#171923] hover:bg-[#F7F8FA]"
-              }`}
-            >
+                          className={`px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
+                            filterStatus === st.id
+                              ? "bg-[#F3F0FF] text-[#6246EA]"
+                              : "text-[#667085] hover:text-[#171923] hover:bg-[#F7F8FA]"
+                          }`}
+                        >
               {st.label}
             </button>
           ))}
